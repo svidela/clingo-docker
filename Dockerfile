@@ -9,9 +9,9 @@ RUN apt-get update --fix-missing && apt-get install -y wget bzip2 ca-certificate
     git mercurial subversion
     
 RUN echo 'export PATH=/opt/conda/bin:$PATH' > /etc/profile.d/conda.sh && \
-    wget --quiet https://repo.continuum.io/miniconda/Miniconda2-4.0.5-Linux-x86_64.sh && \
-    /bin/bash /Miniconda2-4.0.5-Linux-x86_64.sh -b -p /opt/conda && \
-    rm Miniconda2-4.0.5-Linux-x86_64.sh
+    wget --quiet https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh && \
+    /bin/bash miniconda.sh -b -p /opt/conda && \
+    rm miniconda.sh
     
 RUN apt-get install -y curl grep sed dpkg && \
     TINI_VERSION=`curl https://github.com/krallin/tini/releases/latest | grep -o "/v.*\"" | sed 's:^..\(.*\).$:\1:'` && \
@@ -31,12 +31,12 @@ CMD [ "/bin/bash" ]
 
 ###
 
-ENV CLINGO_VERSION="4.5.4"
-ENV CLINGO_FILE="clingo-$CLINGO_VERSION-source.tar.gz"
-ENV CLINGO_URL="http://downloads.sourceforge.net/project/potassco/clingo/$CLINGO_VERSION/$CLINGO_FILE"
-ENV CLINGO_SRC="/clingo-$CLINGO_VERSION-source"
+ENV CLINGO_VERSION="5.0.0"
+ENV CLINGO_FILE="v$CLINGO_VERSION.tar.gz"
+ENV CLINGO_URL="https://github.com/potassco/clingo/archive/$CLINGO_FILE"
+ENV CLINGO_SRC="/clingo-$CLINGO_VERSION"
 
-RUN wget $CLINGO_URL
+RUN wget $CLINGO_URL 
 RUN tar zxvf $CLINGO_FILE && rm $CLINGO_FILE
 
 RUN apt-get update && apt-get install -y bison re2c lua5.1 liblua5.1-dev libtbb-dev && conda install -y scons
@@ -44,7 +44,7 @@ RUN apt-get update && apt-get install -y bison re2c lua5.1 liblua5.1-dev libtbb-
 COPY release.py $CLINGO_SRC/build/release.py
 
 RUN /opt/conda/bin/scons -C $CLINGO_SRC --build-dir=release
-RUN cp $CLINGO_SRC/build/release/python/gringo.so /opt/conda/lib/python2.7/site-packages/ && \
+RUN cp $CLINGO_SRC/build/release/python/clingo.so /opt/conda/lib/python2.7/site-packages/ && \
     cp $CLINGO_SRC/build/release/gringo $CLINGO_SRC/build/release/clingo $CLINGO_SRC/build/release/reify /usr/bin/ && \
     rm -fr $CLINGO_SRC
 
